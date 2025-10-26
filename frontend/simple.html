@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slotify — Smart Tokening Chatbot</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        
+        function Chat({ setToken }) {
+            const [name, setName] = useState('');
+            const [phone, setPhone] = useState('');
+            const [message, setMessage] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [history, setHistory] = useState([]);
+
+            async function handleSend() {
+                if (!message.trim() || !name.trim() || !phone.trim()) {
+                    alert('Enter name, phone and symptom.');
+                    return;
+                }
+                const entry = { from: 'user', text: message };
+                setHistory((h) => [...h, entry]);
+                setLoading(true);
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const mockToken = {
+                        token_number: Math.floor(Math.random() * 1000) + 1,
+                        status: 'Queued',
+                        estimated_wait: '15-20 minutes'
+                    };
+                    setToken(mockToken);
+                    setHistory((h) => [...h, { from: 'system', text: 'Token issued.' }]);
+                    setLoading(false);
+                    setMessage('');
+                }, 1000);
+            }
+
+            return (
+                <div className="bg-white p-4 rounded-lg shadow">
+                    <div className="flex gap-2 mb-3">
+                        <input 
+                            value={name} 
+                            onChange={(e) => setName(e.target.value)} 
+                            placeholder="Your name" 
+                            className="flex-1 p-2 border rounded" 
+                        />
+                        <input 
+                            value={phone} 
+                            onChange={(e) => setPhone(e.target.value)} 
+                            placeholder="Phone" 
+                            className="w-36 p-2 border rounded" 
+                        />
+                    </div>
+
+                    <div className="h-40 overflow-auto border p-2 rounded mb-3 bg-gray-50">
+                        {history.length === 0 ? (
+                            <div className="text-sm text-gray-500">Type symptoms and press Send.</div>
+                        ) : (
+                            history.map((m, i) => (
+                                <div key={i} className={`mb-2 ${m.from === 'user' ? 'text-right' : 'text-left'}`}>
+                                    <div className={`inline-block p-2 rounded ${m.from === 'user' ? 'bg-blue-100' : 'bg-green-100'}`}>
+                                        {m.text}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="flex gap-2">
+                        <input 
+                            value={message} 
+                            onChange={(e) => setMessage(e.target.value)} 
+                            placeholder="Describe your symptoms (e.g., fever, cough)" 
+                            className="flex-1 p-2 border rounded" 
+                        />
+                        <button 
+                            onClick={handleSend} 
+                            disabled={loading} 
+                            className="px-4 py-2 bg-blue-600 text-white rounded"
+                        >
+                            {loading ? 'Please wait...' : 'Send'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function SymptomChips() {
+            const CHIPS = ['fever', 'cough', 'chest pain', 'headache', 'breathing difficulty', 'stomach pain', 'bleeding'];
+            
+            return (
+                <div className="bg-white p-3 rounded shadow">
+                    <div className="text-sm text-gray-600 mb-2">Quick symptoms (tap to copy into chat):</div>
+                    <div className="flex flex-wrap gap-2">
+                        {CHIPS.map((c) => (
+                            <button 
+                                key={c} 
+                                className="px-3 py-1 rounded-full border text-sm" 
+                                onClick={() => navigator.clipboard.writeText(c)}
+                            >
+                                {c}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function UploadReport() {
+            const [file, setFile] = useState(null);
+            const [status, setStatus] = useState('');
+
+            function handleUpload() {
+                if (!file) {
+                    alert('Choose a file first');
+                    return;
+                }
+                setStatus('Uploading...');
+                setTimeout(() => {
+                    setStatus('Uploaded successfully!');
+                }, 1000);
+            }
+
+            return (
+                <div className="bg-white p-3 rounded shadow">
+                    <div className="flex items-center gap-2 mb-3">
+                        <input 
+                            type="file" 
+                            accept="image/*,.pdf" 
+                            onChange={(e) => setFile(e.target.files[0])} 
+                        />
+                        <button 
+                            onClick={handleUpload} 
+                            className="px-3 py-1 bg-indigo-600 text-white rounded"
+                        >
+                            Upload
+                        </button>
+                    </div>
+                    <div className="text-sm text-gray-500 mb-2">{status}</div>
+                </div>
+            );
+        }
+
+        function TokenCard({ token }) {
+            if (!token) return null;
+            return (
+                <div className="max-w-md mx-auto bg-white p-6 rounded shadow text-center">
+                    <h2 className="text-2xl font-bold mb-2">Your Slotify Token</h2>
+                    <div className="text-6xl font-extrabold text-blue-600 mb-2">{token.token_number}</div>
+                    <div className="mb-3">Status: <span className="font-semibold">{token.status}</span></div>
+                    <div className="mb-4">Estimated wait: <strong>{token.estimated_wait}</strong></div>
+                    <div className="text-sm text-gray-600">Show this at reception. You will be notified if your position changes.</div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [token, setToken] = useState(null);
+
+            return (
+                <div className="min-h-screen bg-gray-100 p-4">
+                    <h1 className="text-3xl font-bold text-center mb-6 text-blue-700">Slotify</h1>
+                    {!token ? (
+                        <div className="max-w-xl mx-auto space-y-4">
+                            <Chat setToken={setToken} />
+                            <UploadReport />
+                            <SymptomChips />
+                        </div>
+                    ) : (
+                        <TokenCard token={token} />
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

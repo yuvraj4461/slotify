@@ -1,0 +1,7 @@
+symptoms_text,urgency_label,score
+chest pain,emergency,95
+fever and cough,mild,25
+severe bleeding,emergency,85
+cold and headache,mild,20
+unconscious patient,critical,100
+stomach pain,moderate,40
