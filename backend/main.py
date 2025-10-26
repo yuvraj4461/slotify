@@ -49,21 +49,24 @@ def get_db():
     finally:
         db.close()
 
-
-async def upload_report(file: UploadFile = File(...)):
+@app.post("/api/v1/report/upload")
+async def upload_report(file: UploadFile = File(...), db=Depends(get_db)):
+    # save file logic (your existing code)
     contents = await file.read()
-    img = Image.open(io.BytesIO(contents))
-    report_text = pytesseract.image_to_string(img)
-
+    # --- save to disk, create DB record, etc. ---
+    # optionally run OCR to extract text (you likely already do this)
+    report_text = utils.extract_text_from_file_bytes(contents)  # or your existing OCR flow
+    # Run AI analysis if key present
     ai_advice = None
     try:
-        ai_advice = analyze_report_text(report_text)
+        ai_advice = analyze_report_text(report_text)  # returns dict or None
     except Exception as e:
+        print(f"[AI Error] {e}")
         ai_advice = {"error": str(e)}
-
     return {
         "file": file.filename,
-        "ocr_text": report_text[:500],
+        "ocr_text": report_text[:400],   # short preview
+        "report_id": 123,                # your ID
         "ai_advice": ai_advice
     }
 
