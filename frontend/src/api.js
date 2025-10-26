@@ -1,28 +1,12 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://slotify-tokenizer.onrender.com/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE || "https://your-backend-url/api/v1";
 
-export async function requestToken(payload) {
-  // payload: { name, phone, symptoms, reports }
-  try {
-    const res = await axios.post(`${API_BASE}/token/request`, payload);
-    return res.data;
-  } catch (e) {
-    console.error('API error', e);
-    throw e;
-  }
-}
-
-export async function uploadReport(file) {
+export async function uploadReportFile(file) {
   const form = new FormData();
-  form.append('file', file);
-  try {
-    const res = await axios.post(`${API_BASE}/report/upload`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return res.data;
-  } catch (e) {
-    console.error('Upload error', e);
-    throw e;
-  }
+  form.append("file", file);
+  const res = await axios.post(`${API_BASE}/report/upload`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data; // expect { file, ocr_text, report_id, ai_advice }
 }

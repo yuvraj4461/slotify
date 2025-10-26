@@ -1,4 +1,6 @@
 import os
+import io
+from fastapi import UploadFile, File
 import shutil
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,8 +9,12 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from . import models, crud, triage_rules, utils, ocr
 from .models import Base
+from .ai import analyze_report_text 
+from .ocr import perform_ocr
+from PIL import Image
+import pytesseract
 
-from .ai import analyze_report_text
+
 
 load_dotenv()
 
@@ -43,37 +49,23 @@ def get_db():
     finally:
         db.close()
 
-@app.post('/api/v1/report/upload')
-async def upload_report(
-    file: UploadFile = File(...),
-    phone: str = Form(None),
-    name: str = Form(None),
-    db=Depends(get_db)
-):
-    # Save file with timestamp to avoid collisions
-    filename = f"{int(__import__('time').time())}_{file.filename}"
-    dest = os.path.join(utils.UPLOAD_DIR, filename)
-    with open(dest, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
 
-    # Run OCR
+async def upload_report(file: UploadFile = File(...)):
+    contents = await file.read()
+    img = Image.open(io.BytesIO(contents))
+    report_text = pytesseract.image_to_string(img)
+
+    ai_advice = None
     try:
-        ocr_text = ocr.perform_ocr(dest)
+        ai_advice = analyze_report_text(report_text)
     except Exception as e:
-        ocr_text = f"[OCR failed: {e}]"
+        ai_advice = {"error": str(e)}
 
-    # find or create patient
-    patient = None
-    if phone:
-        patient = crud.get_patient_by_phone(db, phone)
-    if not patient and name and phone:
-        patient = crud.create_patient(db, name, phone)
-
-    report = None
-    if patient:
-        report = crud.create_report(db, patient.id, dest, ocr_text)
-
-    return {"file": filename, "ocr_text": ocr_text, "report_id": report.id if report else None}
+    return {
+        "file": file.filename,
+        "ocr_text": report_text[:500],
+        "ai_advice": ai_advice
+    }
 
 @app.post('/api/v1/token/request')
 def request_token(name: str = Form(...), phone: str = Form(...), symptoms: str = Form(''), db=Depends(get_db)):

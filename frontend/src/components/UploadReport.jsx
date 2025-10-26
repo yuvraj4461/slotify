@@ -1,36 +1,42 @@
-import React, { useState } from 'react';
-import { uploadReport } from '../api.js';
+import React, { useState } from "react";
+import { uploadReportFile } from "../api";
+import AdviceCard from "./AdviceCard";
 
 export default function UploadReport() {
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [status, setStatus] = useState('');
+  const [aiAdvice, setAiAdvice] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  async function handleUpload() {
-    if (!file) return alert('Choose a file first');
-    setStatus('Uploading...');
+  async function handleUpload(e) {
+    e.preventDefault();
+    if (!file) return;
+    setLoading(true);
     try {
-      const res = await uploadReport(file);
-      setPreview(res); // expects { ocr_text, extracted_fields }
-      setStatus('Uploaded — preview below.');
-    } catch (e) {
-      setStatus('Upload failed');
+      const data = await uploadReportFile(file);
+      // data.ai_advice is what backend returns
+      setAiAdvice(data.ai_advice ?? null);
+      // optionally show OCR preview
+      // setOcrText(data.ocr_text)
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="bg-white p-3 rounded shadow">
-      <div className="flex items-center gap-2 mb-3">
-        <input type="file" accept="image/*,.pdf" onChange={(e) => setFile(e.target.files[0])} />
-        <button onClick={handleUpload} className="px-3 py-1 bg-indigo-600 text-white rounded">Upload</button>
+    <div className="max-w-xl mx-auto">
+      <form onSubmit={handleUpload} className="space-y-4">
+        <input type="file" onChange={(e)=>setFile(e.target.files?.[0])} />
+        <button type="submit" disabled={loading} className="btn">
+          {loading ? "Uploading..." : "Upload"}
+        </button>
+      </form>
+
+      <div className="mt-6">
+        <AdviceCard advice={aiAdvice} />
       </div>
-      <div className="text-sm text-gray-500 mb-2">{status}</div>
-      {preview && (
-        <div className="bg-gray-50 p-2 rounded text-sm">
-          <div className="font-semibold">OCR Preview</div>
-          <pre className="whitespace-pre-wrap">{preview.ocr_text}</pre>
-        </div>
-      )}
     </div>
   );
 }
