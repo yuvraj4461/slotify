@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from . import models, crud, triage_rules, utils, ocr
 from .models import Base
 
+from .ai import analyze_report_text
+
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL')
