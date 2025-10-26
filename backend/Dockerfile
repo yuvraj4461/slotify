@@ -23,5 +23,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 # Use Gunicorn with Uvicorn worker for production
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "backend.main:app", \
-     "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
