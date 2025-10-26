@@ -81,7 +81,16 @@ def request_token(name: str = Form(...), phone: str = Form(...), symptoms: str =
         patient = crud.create_patient(db, name, phone)
 
     # compute priority
+    # in backend/main.py, inside request_token endpoint
+
     priority_score = triage_rules.compute_priority(symptoms)
+
+    # Log if using OpenAI
+    if os.getenv("OPENAI_API_KEY"):
+        print(f"[triage] OpenAI enabled - computed priority_score={priority_score} for symptoms={symptoms}")
+    else:
+        print(f"[triage] rule-based priority_score={priority_score} for symptoms={symptoms}")
+
 
     # estimated wait: naive 5 minutes per waiting patient ahead
     queue = crud.get_waiting_queue(db)

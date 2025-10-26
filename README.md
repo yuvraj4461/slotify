@@ -1,12 +1,12 @@
 HEAD
-# slotify
+ slotify
 slotify is aactually a rescheduling chatbot that sets the right timing or entry token numberfor the patients 
 
-# Slotify - Appointment Rescheduler
+ Slotify - Appointment Rescheduler
 
 A proof-of-concept application for appointment rescheduling with crowd management using real-time camera footage.
 
-## Project Structure
+ Project Structure
 
 slotify/
 ├─ frontend/
@@ -35,7 +35,7 @@ slotify/
 └─ README.md
 
 
-## Features
+Features
 
 - Real-time appointment management
 - Crowd detection and management
@@ -43,8 +43,7 @@ slotify/
 - Chat-based interface
 - Symptom tracking
 - Report upload functionality
-
-## Getting Started
+ Getting Started
 
 1. Install dependencies
 2. Start backend server
