@@ -43,3 +43,20 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
+
+# Ignore uploads and other local files
+uploads/
+*.log
+
+# Ignore editor and cache folders
+__pycache__/
+.vscode/
+.vs/
+# Ignore environment and database files
+.env
+.env.prod
+*.db
+
+# Ignore Python virtual environment
+venv/
+backend/.venv/
