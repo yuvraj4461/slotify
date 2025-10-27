@@ -137,3 +137,21 @@ def update_token_status(token_id: int, status: str = Form(...), db=Depends
 @app.get("/")
 def root():
     return {"message": "Slotify API is running ✅"}
+
+from fastapi.responses import JSONResponse
+
+@app.get("/api/v1/admin/patients")
+def get_all_patients(db=Depends(get_db)):
+    try:
+        patients = db.execute("SELECT * FROM patient").fetchall()
+        return {"patients": [dict(row._mapping) for row in patients]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/api/v1/admin/tokens")
+def get_all_tokens(db=Depends(get_db)):
+    try:
+        tokens = db.execute("SELECT * FROM token").fetchall()
+        return {"tokens": [dict(row._mapping) for row in tokens]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
