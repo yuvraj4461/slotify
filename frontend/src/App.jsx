@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
-import Chat from './components/Chat.jsx';
-import TokenCard from './components/TokenCard.jsx';
-import UploadReport from './components/UploadReport.jsx';
-import SymptomChips from './components/SymptomChips.jsx';
+import React, { useState } from "react";
+import TokenForm from "./components/TokenForm";     // your form
+import UploadReport from "./components/UploadReport"; // your upload component
+import AIAdviceCard from "./components/AIAdviceCard";
 
 export default function App() {
-  const [token, setToken] = useState(null);
+  const [aiAdvice, setAiAdvice] = useState(null);
+  const [tokenResult, setTokenResult] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-center mb-6 text-blue-700">Slotify</h1>
-      {!token ? (
-        <div className="max-w-xl mx-auto space-y-4">
-          <Chat setToken={setToken} />
-          <UploadReport />
-          <SymptomChips />
+    <div className="min-h-screen bg-gray-100 py-12">
+      <h1 className="text-center text-4xl font-bold text-indigo-600 mb-6">Slotify</h1>
+
+      <TokenForm onResult={(r) => setTokenResult(r)} />
+      {tokenResult && (
+        <div className="max-w-3xl mx-auto mt-4 p-3 bg-white rounded shadow">
+          <strong>Token result:</strong>
+          <pre className="mt-2 text-sm text-gray-700">{JSON.stringify(tokenResult, null, 2)}</pre>
         </div>
-      ) : (
-        <TokenCard token={token} />
       )}
+
+      {/* UploadReport should call onAdvice when backend returns AI advice */}
+      <UploadReport onAdvice={(a) => setAiAdvice(a)} />
+
+      {/* AI advice card */}
+      <AIAdviceCard advice={aiAdvice} />
     </div>
   );
 }
